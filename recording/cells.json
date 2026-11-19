@@ -1,0 +1,233 @@
+[
+ {
+  "i": 0,
+  "type": "markdown",
+  "start": 4.0,
+  "end": 5.52,
+  "text": "# Machine Learning Models: how they work and which one to use\nReal data, real training, real results. Datasets: California housing, breast cancer (Wisconsin), wine,\nhandwritten digits, 20 Newsgroups, "
+ },
+ {
+  "i": 1,
+  "type": "code",
+  "start": 5.52,
+  "end": 8.04,
+  "text": "import json, time, numpy as np, pandas as pd\nimport lightgbm as lgb      # load LightGBM before PyTorch: on macOS the reverse order crashes (two OpenMP runtimes)\nimport torch\ntorch.set_num_threads(1) "
+ },
+ {
+  "i": 2,
+  "type": "markdown",
+  "start": 8.04,
+  "end": 9.57,
+  "text": "## 1 \u00b7 Linear Regression \u2014 predict a number (tabular)"
+ },
+ {
+  "i": 3,
+  "type": "code",
+  "start": 9.57,
+  "end": 11.28,
+  "text": "from sklearn.datasets import fetch_california_housing\nfrom sklearn.linear_model import LinearRegression\nH = fetch_california_housing(as_frame=True); X, y = H.data, H.target          # target: median h"
+ },
+ {
+  "i": 4,
+  "type": "code",
+  "start": 11.28,
+  "end": 12.81,
+  "text": "# How it learns: gradient descent on one feature (median income), step by step\nx = ((Xtr.MedInc - Xtr.MedInc.mean()) / Xtr.MedInc.std()).values; t = ytr.values\nw = b = 0.0; losses = []\nfor step in ran"
+ },
+ {
+  "i": 5,
+  "type": "markdown",
+  "start": 12.81,
+  "end": 14.34,
+  "text": "## 2 \u00b7 Logistic Regression \u2014 yes or no (tabular)"
+ },
+ {
+  "i": 6,
+  "type": "code",
+  "start": 14.34,
+  "end": 15.89,
+  "text": "from sklearn.datasets import load_breast_cancer\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.pipeline import make_pipeline\nB = load_breast_cancer(); Xb, yb = B.data, B.target      "
+ },
+ {
+  "i": 7,
+  "type": "markdown",
+  "start": 15.89,
+  "end": 17.42,
+  "text": "## 3 \u00b7 k-Nearest Neighbours \u2014 ask the neighbours (tabular, small data)"
+ },
+ {
+  "i": 8,
+  "type": "code",
+  "start": 17.42,
+  "end": 19.04,
+  "text": "from sklearn.datasets import load_wine\nfrom sklearn.neighbors import KNeighborsClassifier\nWd = load_wine(); f2 = [Wd.feature_names.index(\"alcohol\"), Wd.feature_names.index(\"flavanoids\")]\nXw = Standard"
+ },
+ {
+  "i": 9,
+  "type": "markdown",
+  "start": 19.04,
+  "end": 20.57,
+  "text": "## 4 \u00b7 Decision Tree \u2014 a chain of yes/no questions (tabular)"
+ },
+ {
+  "i": 10,
+  "type": "code",
+  "start": 20.57,
+  "end": 22.14,
+  "text": "from sklearn.tree import DecisionTreeClassifier, export_text\ntree = DecisionTreeClassifier(max_depth=3, random_state=42).fit(Xbtr, ybtr)\nprint(export_text(tree, feature_names=list(B.feature_names), de"
+ },
+ {
+  "i": 11,
+  "type": "markdown",
+  "start": 22.14,
+  "end": 23.67,
+  "text": "## 5 \u00b7 Random Forest \u2014 many trees vote (tabular)"
+ },
+ {
+  "i": 12,
+  "type": "code",
+  "start": 23.67,
+  "end": 25.46,
+  "text": "from sklearn.ensemble import RandomForestClassifier\ndeep = DecisionTreeClassifier(random_state=42).fit(Xbtr, ybtr)\nrf = RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1).fit(Xbtr, y"
+ },
+ {
+  "i": 13,
+  "type": "markdown",
+  "start": 25.46,
+  "end": 26.99,
+  "text": "## 6 \u00b7 Gradient Boosting (LightGBM) \u2014 each tree fixes the last one's mistakes (tabular)"
+ },
+ {
+  "i": 14,
+  "type": "code",
+  "start": 26.99,
+  "end": 34.04,
+  "text": "import lightgbm as lgb\nfrom sklearn.ensemble import RandomForestRegressor\ngbm = lgb.LGBMRegressor(n_estimators=600, learning_rate=0.05, num_leaves=63, random_state=42, verbose=-1)\ngbm.fit(Xtr, ytr, ev"
+ },
+ {
+  "i": 15,
+  "type": "markdown",
+  "start": 34.04,
+  "end": 35.58,
+  "text": "## 7 \u00b7 Support Vector Machine \u2014 the widest street between classes"
+ },
+ {
+  "i": 16,
+  "type": "code",
+  "start": 35.58,
+  "end": 37.11,
+  "text": "from sklearn.svm import SVC\nm01 = yw < 2; X2, y2 = Xw[m01], yw[m01]                                          # two cultivars, two features\nsvm = SVC(kernel=\"linear\", C=1.0).fit(X2, y2)\nw_, b_ = svm.co"
+ },
+ {
+  "i": 17,
+  "type": "markdown",
+  "start": 37.11,
+  "end": 38.64,
+  "text": "## 8 \u00b7 Naive Bayes \u2014 word probabilities (text)"
+ },
+ {
+  "i": 18,
+  "type": "code",
+  "start": 38.64,
+  "end": 40.91,
+  "text": "from sklearn.datasets import fetch_20newsgroups\nfrom sklearn.feature_extraction.text import CountVectorizer\nfrom sklearn.naive_bayes import MultinomialNB\ncats = [\"sci.space\", \"rec.autos\", \"sci.med\", \""
+ },
+ {
+  "i": 19,
+  "type": "markdown",
+  "start": 40.91,
+  "end": 42.44,
+  "text": "## 9 \u00b7 K-Means \u2014 find groups without labels"
+ },
+ {
+  "i": 20,
+  "type": "code",
+  "start": 42.44,
+  "end": 44.07,
+  "text": "from sklearn.cluster import KMeans\nfrom sklearn.decomposition import PCA\nXall = StandardScaler().fit_transform(Wd.data); P2 = PCA(2, random_state=42).fit(Xall); Z = P2.transform(Xall)\nkm0 = KMeans(3, "
+ },
+ {
+  "i": 21,
+  "type": "markdown",
+  "start": 44.07,
+  "end": 45.6,
+  "text": "## 10 \u00b7 PCA \u2014 squeeze many features into a few"
+ },
+ {
+  "i": 22,
+  "type": "code",
+  "start": 45.6,
+  "end": 47.14,
+  "text": "from sklearn.datasets import load_digits\nD = load_digits(); Pd = PCA(random_state=42).fit(D.data)\nev = Pd.explained_variance_ratio_; cum = np.cumsum(ev)\nn90 = int(np.argmax(cum >= 0.90) + 1)\nprint(f\"{"
+ },
+ {
+  "i": 23,
+  "type": "markdown",
+  "start": 47.14,
+  "end": 48.67,
+  "text": "## 11 \u00b7 Neural Network (MLP) \u2014 layers of weighted sums"
+ },
+ {
+  "i": 24,
+  "type": "code",
+  "start": 48.67,
+  "end": 50.54,
+  "text": "from sklearn.neural_network import MLPClassifier\nDtr, Dte, dtr, dte = train_test_split(D.data / 16.0, D.target, test_size=0.25, random_state=42, stratify=D.target)\nimport warnings\nfrom sklearn.excepti"
+ },
+ {
+  "i": 25,
+  "type": "markdown",
+  "start": 50.54,
+  "end": 52.07,
+  "text": "## 12 \u00b7 Convolutional Neural Network \u2014 filters that scan images"
+ },
+ {
+  "i": 26,
+  "type": "code",
+  "start": 52.07,
+  "end": 58.49,
+  "text": "import torch.nn as nn, torchvision\nfrom torchvision import transforms\ndev = \"mps\" if torch.backends.mps.is_available() else \"cpu\"\ntf = transforms.ToTensor()\nmtr = torchvision.datasets.MNIST(\"../data\","
+ },
+ {
+  "i": 27,
+  "type": "markdown",
+  "start": 58.49,
+  "end": 60.01,
+  "text": "## 13 \u00b7 LSTM \u2014 memory for sequences (time series)"
+ },
+ {
+  "i": 28,
+  "type": "code",
+  "start": 60.01,
+  "end": 63.74,
+  "text": "import statsmodels.api as sm\nco2 = sm.datasets.co2.load_pandas().data[\"co2\"].resample(\"MS\").mean().interpolate()\nv = co2.values.astype(\"float32\"); mu, sd = v[:-36].mean(), v[:-36].std(); s = (v - mu) "
+ },
+ {
+  "i": 29,
+  "type": "markdown",
+  "start": 63.74,
+  "end": 65.27,
+  "text": "## 14\u201315 \u00b7 Transformers and LLMs (text) \u2014 results from the ScamGuard project"
+ },
+ {
+  "i": 30,
+  "type": "code",
+  "start": 65.27,
+  "end": 66.8,
+  "text": "sg = json.load(open(\"../reports/scamguard_results.json\"))       # real outputs from the ScamGuard notebook (Bangla scam SMS)\nfor row in sg[\"locked\"]: print(f\"{row['model']:28s} PR-AUC {row['PR-AUC']:."
+ },
+ {
+  "i": 31,
+  "type": "markdown",
+  "start": 66.8,
+  "end": 68.33,
+  "text": "## Save the visual data"
+ },
+ {
+  "i": 32,
+  "type": "code",
+  "start": 68.34,
+  "end": 69.88,
+  "text": "json.dump(VIZ, open(\"../reports/viz.json\", \"w\"))\nprint(\"saved\", \", \".join(VIZ))"
+ }
+]
